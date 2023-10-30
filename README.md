@@ -1,11 +1,11 @@
 # StartupLang
 
 ## Funcionalidades
-- DEFINIR_STARTUP: Define uma startup e atribui um valor inicial a ela.
-- INVESTIMENTO: Representa um investimento feito em uma startup específica.
-- MODELO_NEGOCIOS: Define um modelo de negócios para uma startup, incluindo receitas e despesas.
-- RODADA_INVESTIMENTO: Representa uma rodada de investimento, listando os investidores e o valor investido.
-- RECRUTAMENTO: Cria uma vaga de emprego dentro da startup.
+- `DEFINIR_STARTUP` --> Define uma startup e atribui um valor inicial a ela.
+- `INVESTIMENTO`: --> Representa um investimento feito em uma startup específica.
+- `MODELO_NEGOCIOS`: --> Define um modelo de negócios para uma startup, incluindo receitas e despesas.
+- `RODADA_INVESTIMENTO`: --> Representa uma rodada de investimento, listando os investidores e o valor investido.
+- `RECRUTAMENTO`: --> Cria uma vaga de emprego dentro da startup.
 
 ```code
 STARTUP = { INSTRUCAO } ;
