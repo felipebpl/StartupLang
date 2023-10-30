@@ -1,53 +1,27 @@
 # StartupLang
-```bash
-program = { statement } ;
 
-statement = variable_declaration 
-          | function_declaration 
-          | expression_statement 
-          | business_model_declaration 
-          | investment_round_declaration 
-          | recruitment_declaration ;
+## Funcionalidades
+- DEFINIR_STARTUP: Define uma startup e atribui um valor inicial a ela.
+- INVESTIMENTO: Representa um investimento feito em uma startup específica.
+- MODELO_NEGOCIOS: Define um modelo de negócios para uma startup, incluindo receitas e despesas.
+- RODADA_INVESTIMENTO: Representa uma rodada de investimento, listando os investidores e o valor investido.
+- RECRUTAMENTO: Cria uma vaga de emprego dentro da startup.
 
-variable_declaration = "let", identifier, "=", expression ;
-
-function_declaration = "function", identifier, "(", [ parameters ], ")", "{", { statement }, "}" ;
-
-parameters = identifier, { ",", identifier } ;
-
-expression_statement = expression, ";" ;
-
-expression = term, { ("+" | "-"), term } ;
-
-term = factor, { ("*" | "/"), factor } ;
-
-factor = number | identifier | "(", expression, ")" ;
-
-business_model_declaration = "businessModel", identifier, "{", { revenue_or_expense_declaration }, "}" ;
-
-revenue_or_expense_declaration = ("revenue" | "expense"), identifier, "=", expression ;
-
-investment_round_declaration = "investmentRound", identifier, "{", "valuation", "=", expression, "investments", "=", "[", { investment_declaration }, "]", "}" ;
-
-investment_declaration = "{", "investor", "=", string, "amount", "=", expression, "}" ;
-
-recruitment_declaration = "recruitment", identifier, "{", { job_declaration }, "}" ;
-
-job_declaration = "job", string, "{", "description", "=", string, "candidates", "=", "[", { candidate_declaration }, "]", "}" ;
-
-candidate_declaration = "{", "name", "=", string, "skills", "=", "[", { string }, "]", "}" ;
-
-identifier = letter, { letter | digit } ;
-
-number = digit, { digit } ;
-
-string = """" , { character }, """" ;
-
-letter = "a" | "b" | ... | "z" | "A" | "B" | ... | "Z" ;
-
-digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
-
-character = letter | digit | other_characters ;
-
-other_characters = " " | "!" | "#" | "$" | "%" | "&" | "(" | ")" | "*" | "+" | "," | "-" | "." | "/" | ":" | ";" | "<" | "=" | ">" | "?" | "@" | "[" | "]" | "^" | "_" | "`" | "{" | "}" | "|" | "~" | """ ;
+```code
+STARTUP = { INSTRUCAO } ;
+INSTRUCAO = ( TITULO | DEFINIR_STARTUP | INVESTIMENTO | MODELO_NEGOCIOS | RODADA_INVESTIMENTO | RECRUTAMENTO ) ;
+TITULO = "#", TEXTO, "\n" ;
+DEFINIR_STARTUP = "@startup", IDENTIFICADOR, "(", "valor:", VALOR, ")", "\n" ;
+INVESTIMENTO = "%investimento", IDENTIFICADOR_STARTUP, "(", "valor:", VALOR, ")", "\n" ;
+MODELO_NEGOCIOS = "@modelo", IDENTIFICADOR, "{", { ITEM_MODELO }, "}", "\n" ;
+ITEM_MODELO = ( "receita", ":", VALOR | "despesa", ":", VALOR ), "\n" ;
+RODADA_INVESTIMENTO = "@rodada", IDENTIFICADOR, "{", "startup:", IDENTIFICADOR_STARTUP, "investimentos:", "[", { IDENTIFICADOR_INVESTIDOR }, "]", "}", "\n" ;
+RECRUTAMENTO = "@vaga", IDENTIFICADOR, "(", "cargo:", TEXTO, ")", "\n" ;
+IDENTIFICADOR = LETRA, { LETRA | DIGITO | "_" } ;
+IDENTIFICADOR_STARTUP = IDENTIFICADOR ;
+IDENTIFICADOR_INVESTIDOR = IDENTIFICADOR ;
+VALOR = NUMERO, { NUMERO } ;
+LETRA = ( "a" | ... | "z" | "A" | ... | "Z" ) ;
+DIGITO = ( "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ) ;
+TEXTO = { LETRA | DIGITO | " " | "-" | "_" } ;
 ```
