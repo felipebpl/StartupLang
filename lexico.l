@@ -1,24 +1,36 @@
 %{
-#include "y.tab.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "sintatico.tab.h"
 %}
 
-
-TITULO              "#"
-IDENTIFICADOR       [a-zA-Z_][a-zA-Z_0-9]*
-VALOR               [0-9]+
-TEXTO               [a-zA-Z_0-9 -]+
-
-// Palavras-chave
-"DEFINIR_STARTUP"   { return DEFINIR_STARTUP; }
-"INVESTIMENTO"      { return INVESTIMENTO; }
-"MODELO_NEGOCIOS"   { return MODELO_NEGOCIOS; }
-"RODADA_INVESTIMENTO" { return RODADA_INVESTIMENTO; }
-"RECRUTAMENTO"      { return RECRUTAMENTO; }
-
-// Outros tokens
-[ \t\n]             { /* Ignorar espaços em branco e novas linhas */ }
-.                   { return yytext[0]; }
+DIGITO [0-9]
+LETRA [a-zA-Z]
 
 %%
 
-int yywrap() { return 1; }
+"#"                                    { printf("Token TITULO\n"); return TITULO; }
+"@startup"                             { printf("Token DEFINIR_STARTUP\n"); return DEFINIR_STARTUP; }
+"%investimento"                        { printf("Token INVESTIMENTO\n"); return INVESTIMENTO; }
+"@modelo"                              { printf("Token MODELO_NEGOCIOS\n"); return MODELO_NEGOCIOS; }
+"@rodada"                              { printf("Token RODADA_INVESTIMENTO\n"); return RODADA_INVESTIMENTO; }
+"@vaga"                                { printf("Token RECRUTAMENTO\n"); return RECRUTAMENTO; }
+"valor:"                               { printf("Token LITERAL_VALOR\n"); return LITERAL_VALOR; }
+"startup:"                             { printf("Token LITERAL_STARTUP\n"); return LITERAL_STARTUP; }
+"investimentos:"                       { printf("Token LITERAL_INVESTIMENTOS\n"); return LITERAL_INVESTIMENTOS; }
+"cargo:"                               { printf("Token LITERAL_CARGO\n"); return LITERAL_CARGO; }                          
+"receita:"                             { printf("Token ITEM_MODELO\n"); return ITEM_MODELO; }  
+"despesa:"                             { printf("Token ITEM_MODELO\n"); return ITEM_MODELO; }      
+[a-zA-Z][a-zA-Z0-9]*                   { printf("Token IDENTIFICADOR\n"); return IDENTIFICADOR; }
+{DIGITO}+                              { printf("Token VALOR\n"); return VALOR; }
+"("                                    { printf("Token ABRE_PARENTESES\n"); return ABRE_PARENTESES; }
+")"                                    { printf("Token FECHA_PARENTESES\n"); return FECHA_PARENTESES; }
+"{"                                    { printf("Token ABRE_CHAVES\n"); return ABRE_CHAVES; }
+"}"                                    { printf("Token FECHA_CHAVES\n"); return FECHA_CHAVES; }
+","                                    { printf("Token VIRGULA\n"); return VIRGULA; }
+\"([^\\\"]|\\.)*\"                     { printf("Token TEXTO\n"); return TEXTO; }
+[ \t\n]                                { /* Ignora espaços embranco */ }
+.                                      { fprintf(stderr, "Caractere não reconhecido: %c\n", yytext[0]); }
+
+%%

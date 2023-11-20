@@ -1,36 +1,48 @@
 %{
 #include <stdio.h>
+#include <stdlib.h>
+extern int yylex();
+extern char *yytext;
+void yyerror(const char *s) { fprintf(stderr, "Erro de análise: %s\n", s); }
 %}
 
-%token IDENTIFICADOR VALOR TEXTO
-%token DEFINIR_STARTUP INVESTIMENTO MODELO_NEGOCIOS RODADA_INVESTIMENTO RECRUTAMENTO
+%token TITULO DEFINIR_STARTUP INVESTIMENTO MODELO_NEGOCIOS ITEM_MODELO RODADA_INVESTIMENTO RECRUTAMENTO
+%token IDENTIFICADOR VALOR TEXTO LITERAL_VALOR LITERAL_STARTUP LITERAL_INVESTIMENTOS LITERAL_CARGO
+%token ABRE_PARENTESES FECHA_PARENTESES ABRE_CHAVES FECHA_CHAVES VIRGULA 
 
 %%
 
 startup:
-    '{' instrucoes '}'
-    ;
-
-instrucoes:
-    | instrucoes instrucao
-    ;
+    /* vazio */
+  | startup instrucao
+  ;
 
 instrucao:
-    TITULO
-  | DEFINIR_STARTUP
-  | INVESTIMENTO
-  | MODELO_NEGOCIOS
-  | RODADA_INVESTIMENTO
-  | RECRUTAMENTO
+    TITULO TEXTO
+  | DEFINIR_STARTUP IDENTIFICADOR ABRE_PARENTESES LITERAL_VALOR VALOR FECHA_PARENTESES
+  | INVESTIMENTO IDENTIFICADOR ABRE_PARENTESES LITERAL_VALOR VALOR FECHA_PARENTESES
+  | MODELO_NEGOCIOS IDENTIFICADOR ABRE_CHAVES lista_modelo FECHA_CHAVES
+  | RODADA_INVESTIMENTO IDENTIFICADOR ABRE_CHAVES LITERAL_STARTUP IDENTIFICADOR LITERAL_INVESTIMENTOS ABRE_PARENTESES lista_investidores FECHA_PARENTESES FECHA_CHAVES
+  | RECRUTAMENTO IDENTIFICADOR ABRE_PARENTESES LITERAL_CARGO TEXTO FECHA_PARENTESES
+  ;
+
+lista_modelo:
+    /* vazio */
+  | lista_modelo ITEM_MODELO VALOR
+  ;
+
+lista_investidores:
+    /* vazio */
+  | lista_investidores VIRGULA IDENTIFICADOR
+  | IDENTIFICADOR
   ;
 
 %%
 
 int main() {
-    yyparse();
+    if (yyparse()) {
+        fprintf(stderr, "Análise falhou\n");
+        return 1;
+    }
     return 0;
-}
-
-void yyerror(const char *s) {
-    fprintf(stderr, "Error: %s\n", s);
 }
