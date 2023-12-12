@@ -1,6 +1,7 @@
 from abc import abstractmethod
 import sys
 import time
+import random
 
 
 class PrePro:
@@ -49,17 +50,26 @@ class Investimento(Node):
         startup = symbol_table.get(startup_nome)
         print(f"Começando uma rodada de captação com a meta de levantar R$ {meta_investimento.value}\n")
         time.sleep(1)  
+        investors_count = 0  # Variable to keep track of the number of investors
         while captado_investimento.value < meta_investimento.value:
-            captado_investimento.value += 5000
-            print(f"Captado até agora: R$ {captado_investimento.value}")
+            print("Procurando mais investidores...")
+            time.sleep(1)
+            investors_count += 1  # Increment the number of investors
+            print("Mais um investidor na rodada!")
+            remaining_amount = meta_investimento.value - captado_investimento.value
+            random_amount = max(random.randint(0, remaining_amount // 100) * 100, 1000)
+            captado_investimento.value += random_amount
+            print(f"Captado até agora: R$ {captado_investimento.value}\n")
 
         if captado_investimento.value < meta_investimento.value:
             print(f"Captado total: R$ {captado_investimento.value}\n")
             print("Meta de captação não atingida!\n")
         else:
             print(f"Captado total: R$ {captado_investimento.value}\nMeta de captação atingida!\n")
+            
         startup['investimentos'].append({'meta': meta_investimento, 'captado': captado_investimento})
         time.sleep(2)  # Sleep for 2 seconds to simulate processing
+        print(f"Número de investidores na rodada: {investors_count}\n")  # Print the number of investors
         print("Rodada finalizada!\n")
         time.sleep(1)
 
@@ -116,6 +126,7 @@ class Tokenizer:
             "valor:": "LITERAL_VALOR",
             "startup:": "LITERAL_STARTUP",
             "investimentos:": "LITERAL_INVESTIMENTOS",
+            "tipo:": "LITERAL_TIPO",
             "receita:": "ITEM_MODELO",
             "despesa:": "ITEM_MODELO",
             "meta:": "LITERAL_META",
@@ -254,23 +265,31 @@ class Parser:
             raise Exception("Expected '{' to start business model")
         tokenizer.select_next()  # Skip '{'
 
-        modelo = {}
+        modelo = {'tipo': None}  # Initialize the 'tipo' field
 
         while tokenizer.next.type != "FECHA_CHAVES":
-            if tokenizer.next.type not in ["ITEM_MODELO"]:
+            if tokenizer.next.type not in ["ITEM_MODELO", "LITERAL_TIPO"]:  # Add 'LITERAL_TIPO' to valid types
                 raise Exception("Expected 'receita:' or 'despesa:' in business model")
-            tipo_item = tokenizer.next.value
-            tokenizer.select_next()  # Skip 'receita:' or 'despesa:'
+            if tokenizer.next.type == "LITERAL_TIPO":  # Check for 'tipo:' keyword
+                tokenizer.select_next()  # Skip 'tipo:'
+                if tokenizer.next.type != "IDENTIFICADOR":
+                    raise Exception("Expected a valid tipo identifier after 'tipo:'")
+                modelo['tipo'] = tokenizer.next.value
+                tokenizer.select_next()  # Skip tipo identifier
+            else:
+                tipo_item = tokenizer.next.value
+                tokenizer.select_next()  # Skip 'receita:' or 'despesa:'
 
-            if tokenizer.next.type != "VALOR":
-                raise Exception("Expected a numeric value after 'receita:' or 'despesa:'")
-            valor_item = IntVal(tokenizer.next.value)
-            modelo[tipo_item] = valor_item
-            tokenizer.select_next()  # Skip numeric value
+                if tokenizer.next.type != "VALOR":
+                    raise Exception("Expected a numeric value after 'receita:' or 'despesa:'")
+                valor_item = IntVal(tokenizer.next.value)
+                modelo[tipo_item] = valor_item
+                tokenizer.select_next()  # Skip numeric value
 
         tokenizer.select_next()  # Skip '}'
 
         return ModeloNegocios(None, [nome_startup, modelo])
+
 
     @staticmethod
     def run(code):
@@ -289,8 +308,11 @@ class Parser:
                 print(f"Startup: {identifier}")
                 print(f"  Modelo de Negócios: ")
                 for item, valor in data['modelo'].items():
-                    print(f"    {item}: {valor.value}")
-                print(f"  Caixa Inicial: R${data['valor']}")  # Access the 'value' attribute of IntVal
+                    if item == 'tipo':
+                        print(f"    {item}: {valor}")
+                    else:
+                        print(f"    {item}: {valor.value}")
+                print(f"  Caixa Inicial: R${data['valor']}")  
                 print(f"  Investimentos: \n")
                 for invest in data['investimentos']:
                     print(f"    Meta: {invest['meta'].value}")
