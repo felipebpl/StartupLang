@@ -44,9 +44,25 @@ class DefinirStartup(Node):
 class Investimento(Node):
     def evaluate(self, symbol_table):
         startup_nome = self.children[0]
-        valor_investimento = self.children[1].evaluate(symbol_table)
+        meta_investimento = self.children[1]['meta']
+        captado_investimento = self.children[1]['captado']  
         startup = symbol_table.get(startup_nome)
-        startup['investimentos'].append(valor_investimento)
+        print(f"Começando uma rodada de captação com a meta de levantar R$ {meta_investimento.value}\n")
+        time.sleep(1)  
+        while captado_investimento.value < meta_investimento.value:
+            captado_investimento.value += 5000
+            print(f"Captado até agora: R$ {captado_investimento.value}")
+
+        if captado_investimento.value < meta_investimento.value:
+            print(f"Captado total: R$ {captado_investimento.value}\n")
+            print("Meta de captação não atingida!\n")
+        else:
+            print(f"Captado total: R$ {captado_investimento.value}\nMeta de captação atingida!\n")
+        startup['investimentos'].append({'meta': meta_investimento, 'captado': captado_investimento})
+        time.sleep(2)  # Sleep for 2 seconds to simulate processing
+        print("Rodada finalizada!\n")
+        time.sleep(1)
+
 
 class ModeloNegocios(Node):
     def evaluate(self, symbol_table):
@@ -97,11 +113,13 @@ class Tokenizer:
             "}": "FECHA_CHAVES",
             ",": "VIRGULA",
             ";": "PONTO_E_VIRGULA",
-            "valor:": "LITERAL_VALOR",  # Updated this line
+            "valor:": "LITERAL_VALOR",
             "startup:": "LITERAL_STARTUP",
             "investimentos:": "LITERAL_INVESTIMENTOS",
             "receita:": "ITEM_MODELO",
-            "despesa:": "ITEM_MODELO"
+            "despesa:": "ITEM_MODELO",
+            "meta:": "LITERAL_META",
+            "captado:": "LITERAL_CAPTADO"  # New syntax for meta and captado
         }
 
         while self.position < len(self.source):
@@ -135,6 +153,7 @@ class Tokenizer:
             raise ValueError(f"Invalid character at position {self.position}: '{current_char}'")
 
         self.next = Token("EOF", "")
+
 
 class Parser:
 
@@ -194,20 +213,34 @@ class Parser:
             raise Exception("Expected '(' after startup name")
         tokenizer.select_next()  # Skip '('
 
-        if tokenizer.next.type != "LITERAL_VALOR":
-            raise Exception("Expected 'valor:'")
-        tokenizer.select_next()  # Skip 'valor:'
-
+        if tokenizer.next.type != "LITERAL_META":
+            raise Exception("Expected 'meta:'")
+        tokenizer.select_next()  # Skip 'meta:'
+        
         if tokenizer.next.type != "VALOR":
-            raise Exception("Expected a numeric value after 'valor:'")
-        valor_investimento = IntVal(tokenizer.next.value)
+            raise Exception("Expected a numeric value after 'meta:'")
+        meta_investimento = IntVal(tokenizer.next.value)
         tokenizer.select_next()  # Skip numeric value
-
+        
+        if tokenizer.next.type != "VIRGULA":
+            raise Exception("Expected ',' after meta value")
+        tokenizer.select_next()  # Skip ','
+        
+        if tokenizer.next.type != "LITERAL_CAPTADO":
+            raise Exception("Expected 'captado:'", 'got', tokenizer.next.type)
+        tokenizer.select_next()  # Skip 'captado:'
+        
+        if tokenizer.next.type != "VALOR":
+            raise Exception("Expected a numeric value after 'captado:'")
+        captado_investimento = IntVal(tokenizer.next.value)
+        tokenizer.select_next()  # Skip numeric value
+        
         if tokenizer.next.type != "FECHA_PARENTESES":
-            raise Exception("Expected ')' after investment value")
+            raise Exception("Expected ')' after investment values")
         tokenizer.select_next()  # Skip ')'
+        
+        return Investimento(None, [nome_startup, {'meta': meta_investimento, 'captado': captado_investimento}])
 
-        return Investimento(None, [nome_startup, valor_investimento])
 
     @staticmethod
     def parse_modelo_negocios(tokenizer):
@@ -254,12 +287,20 @@ class Parser:
 
             for identifier, data in symbol_table.symbol_table.items():
                 print(f"Startup: {identifier}")
-                print(f"  Valor Inicial: {data['valor']}")
-                print(f"  Investimentos: {data['investimentos']}")
-                print(f"  Modelo de Negócios: {data['modelo']}")
+                print(f"  Modelo de Negócios: ")
+                for item, valor in data['modelo'].items():
+                    print(f"    {item}: {valor.value}")
+                print(f"  Caixa Inicial: R${data['valor']}")  # Access the 'value' attribute of IntVal
+                print(f"  Investimentos: \n")
+                for invest in data['investimentos']:
+                    print(f"    Meta: {invest['meta'].value}")
+                    print(f"    Captado: {invest['captado'].value}\n")
+
+                final_caixa = data['valor'] + sum(invest['captado'].value for invest in data['investimentos'])
+                print(f"  Caixa Final: R${final_caixa}")
                 print()
 
-            print("Test processed successfully!")
+            print("Teste processado com sucesso!")
 
         except Exception as e:
             print(f"Error: {e}")
