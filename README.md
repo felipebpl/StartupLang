@@ -19,7 +19,6 @@ INVESTIMENTO       = "%investimento", IDENTIFICADOR_STARTUP, "(", "meta:", VALOR
 MODELO_NEGOCIOS    = "@modelo", IDENTIFICADOR, "{", { ITEM_MODELO }, "}", "\n" ;
 ITEM_MODELO        = ( "receita", ":", VALOR | "despesa", ":", VALOR ), "\n" ;
 RODADA_INVESTIMENTO = "@rodada", IDENTIFICADOR, "{", "startup:", IDENTIFICADOR_STARTUP, "investimentos:", "[", { IDENTIFICADOR_INVESTIDOR }, "]", "}", "\n" ;
-RECRUTAMENTO       = "@vaga", IDENTIFICADOR, "(", "cargo:", TEXTO, ")", "\n" ;
 IDENTIFICADOR      = LETRA, { LETRA | DIGITO | "_" } ;
 IDENTIFICADOR_STARTUP = IDENTIFICADOR ;
 IDENTIFICADOR_INVESTIDOR = IDENTIFICADOR ;
